@@ -22,18 +22,21 @@ jobs:
         run: echo " code clone from github"
 
   test:
+    needs: code
     runs-on: ubuntu-latest
     steps:
       - name: test the container
         run: echo "code for test"
 
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: build docker cont
         run: echo "docker cont build"
 
   deploy:
+    needs: [build,test]
     if: inputs.environment == 'dev'
     runs-on: ubuntu-latest
     steps:
