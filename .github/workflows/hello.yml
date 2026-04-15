@@ -3,6 +3,9 @@ name: hello
 on: 
   push:
       branches: [main]
+
+      paths:
+        - '**.html'
 jobs:
   greet:
     runs-on: ubuntu-latest
