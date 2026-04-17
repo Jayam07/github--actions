@@ -4,17 +4,16 @@ on:
   workflow_dispatch:
 
 jobs:
+  deploy:
+    runs-on: self-hosted
 
-    deploy:
-        env:
-            DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
-            DOCKER_TAG: ${{ github.sha }}
+    env:
+      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+      DOCKER_TAG: latest
 
-        runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        steps:
-            - name: checkout code
-              uses: actions/checkout@v4
-
-            - name: deploy with docker compose
-              run: docker compose down && docker compose up -d --build --force-recreate --pull always
+      - name: Deploy with docker compose
+        run: docker compose down && docker compose up -d --force-recreate --pull always
