@@ -1,0 +1,24 @@
+#pip-audit
+
+name: Dependancy scan
+
+on:
+    workflow_call:
+
+jobs:
+    dependansy-check:
+        runs-on: ubuntu-latest
+        steps:
+            - name: code checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Python 3.12
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: install pip audit
+              run: pip install pip-audit
+
+            - name: Audit dependencies
+              run: pip-audit -r requirements.txt
