@@ -1,4 +1,3 @@
-# this will deploy the safe / secure / tested app to Prod server
 name: Deploy To Server
 
 on:
@@ -7,27 +6,26 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
-      DOCKER_TAG: latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: SSH to Prod server & create app folder
+      - name: SSH to Prod server and prepare machine
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
           username: ${{ secrets.EC2_SSH_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            echo "Installing required packages & folders"
+            echo "Installing Docker and creating app folder"
             sudo apt-get update
             sudo apt-get install -y docker.io docker-compose-plugin
             mkdir -p ~/devops
+            sudo docker --version
+            sudo docker compose version
 
-      - name: Copy the docker-compose file
+      - name: Copy docker-compose file to server
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
@@ -36,7 +34,7 @@ jobs:
           source: docker-compose.yml
           target: ~/devops
 
-      - name: SSH to Prod server & run the app
+      - name: SSH to Prod server and run app
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_SSH_HOST }}
@@ -44,7 +42,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "Running App"
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login --username "${{ vars.DOCKERHUB_USER }}" --password-stdin
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login --username "${{ vars.DOCKERHUB_USER }}" --password-stdin
             cd ~/devops
-            DOCKERHUB_USER=${{ vars.DOCKERHUB_USER }} DOCKER_TAG=latest docker compose down
-            DOCKERHUB_USER=${{ vars.DOCKERHUB_USER }} DOCKER_TAG=latest docker compose up -d --force-recreate --pull always
+            sudo DOCKERHUB_USER=${{ vars.DOCKERHUB_USER }} DOCKER_TAG=latest docker compose down
+            sudo DOCKERHUB_USER=${{ vars.DOCKERHUB_USER }} DOCKER_TAG=latest docker compose up -d --force-recreate --pull always
